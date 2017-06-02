@@ -1,1 +1,1 @@
-# scala-ext
+# Scala+
