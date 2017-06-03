@@ -21,6 +21,8 @@ import org.scalatest.Matchers._
 import org.scalatest.WordSpec
 import org.scalatest.mockito.MockitoSugar.mock
 
+import scala.util.control.Breaks
+
 /** @author Christian Schlichtherle */
 class ResourceLoanSpec extends WordSpec {
 
@@ -64,8 +66,8 @@ class ResourceLoanSpec extends WordSpec {
       }
     }
 
-    "throwing a `Throwable` in its code block and catching an `Exception` from `AutoCloseable.close()`" should {
-      "chain the throwables via `Throwable.addSuppressed(Throwable)`" in {
+    "throwing a `Throwable` in its code block and catching a `Throwable` from `AutoCloseable.close()`" should {
+      "chain the exceptions via `Throwable.addSuppressed(Throwable)`" in {
         val resource = mock[AutoCloseable]
         val t1 = new Throwable
         val t2 = new Exception
@@ -79,6 +81,17 @@ class ResourceLoanSpec extends WordSpec {
         t1.getSuppressed shouldBe Array(t2)
         verify(resource) close ()
         verifyNoMoreInteractions(resource)
+      }
+    }
+
+    "dealing with a null resource" should {
+      "just call the resource handler" in {
+        var called = false
+        loan(null: AutoCloseable) to { param =>
+          param shouldBe null
+          called = true
+        }
+        called shouldBe true
       }
     }
   }

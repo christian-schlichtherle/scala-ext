@@ -15,6 +15,7 @@
  */
 package global.namespace.scala.plus
 
+import global.namespace.scala.plus.OnTryFinally._
 import global.namespace.scala.plus.ResourceLoan.LoanStatement
 
 /** A mix-in trait which provides Java's basic "try-with-resources" statement.
@@ -77,23 +78,11 @@ object ResourceLoan extends ResourceLoan {
       * @param fun the function with the nullable resource parameter.
       */
     final def to[B](fun: A => B): B = {
-      var t1: Throwable = null
-      try {
+      onTry {
         fun(resource)
-      } catch {
-        case t: Throwable =>
-          t1 = t
-          throw t
-      } finally {
+      } onFinally {
         if (null != resource) {
-          try {
-            resource close()
-          } catch {
-            case t2: Throwable =>
-              if (null == t1)
-                throw t2
-              t1 addSuppressed t2
-          }
+          resource close()
         }
       }
     }

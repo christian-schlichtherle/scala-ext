@@ -18,12 +18,47 @@ package global.namespace.scala.plus
 import global.namespace.scala.plus.OnTryFinally._
 import org.scalatest.Matchers._
 import org.scalatest.WordSpec
+import org.scalatest.prop.PropertyChecks._
+
+import scala.util.control.ControlThrowable
 
 /** @author Christian Schlichtherle */
 class OnTryFinallySpec extends WordSpec {
 
+  private def fatalThrowables = {
+    Table(
+      "throwable",
+      () => new VirtualMachineError { },
+      () => new ThreadDeath,
+      () => new InterruptedException,
+      () => new LinkageError,
+      () => new ControlThrowable { }
+    )
+  }
+
+  private def nonFatalThrowables = {
+    Table(
+      "throwable",
+      () => new Throwable
+    )
+  }
+
+  private def anyThrowables = {
+    Table(
+      "throwable",
+      // Fatal throwables:
+      () => new VirtualMachineError { },
+      () => new ThreadDeath,
+      () => new InterruptedException,
+      () => new LinkageError,
+      () => new ControlThrowable { },
+      // Non-fatal Throwables:
+      () => new Throwable
+    )
+  }
+
   "The `onTry { ... } onFinally { ... }` statement" when {
-    "not throwing a Throwable" should {
+    "not throwing any exception" should {
       "execute both code blocks" in {
         var list = List.empty[Int]
         onTry {
@@ -37,62 +72,95 @@ class OnTryFinallySpec extends WordSpec {
       }
     }
 
-    "throwing a Throwable in the first code block" should {
+    "throwing any `Throwable` in the first code block" should {
       "execute both code blocks" in {
-        var list = List.empty[Int]
-        val t = new Throwable
-        intercept[Throwable] {
-          onTry {
-            list ::= 1
-            throw t
-          } onFinally {
-            list ::= 2
-          }
-        } should be theSameInstanceAs t
-        t.getSuppressed shouldBe Array()
-        list shouldBe List(2, 1)
+        forAll(anyThrowables) { tf =>
+          val t = tf()
+          var list = List.empty[Int]
+          intercept[Throwable] {
+            onTry {
+              list ::= 1
+              throw t
+            } onFinally {
+              list ::= 2
+            }
+          } should be theSameInstanceAs t
+          t.getSuppressed shouldBe Array()
+          list shouldBe List(2, 1)
+        }
       }
     }
 
-    "throwing a Throwable in the second code block" should {
+    "throwing any `Throwable` in the second code block" should {
       "execute both code blocks" in {
-        var list = List.empty[Int]
-        val t = new Throwable
-        intercept[Throwable] {
-          onTry {
-            list ::= 1
-          } onFinally {
-            list ::= 2
-            throw t
-          }
-        } should be theSameInstanceAs t
-        t.getSuppressed shouldBe Array()
-        list shouldBe List(2, 1)
+        forAll(anyThrowables) { tf =>
+          val t = tf()
+          var list = List.empty[Int]
+          intercept[Throwable] {
+            onTry {
+              list ::= 1
+            } onFinally {
+              list ::= 2
+              throw t
+            }
+          } should be theSameInstanceAs t
+          t.getSuppressed shouldBe Array()
+          list shouldBe List(2, 1)
+        }
       }
     }
 
-    "throwing a Throwable in both code blocks" should {
-      "chain the Throwables via `Throwable.addSuppressed(Throwable)`" in {
-        var list = List.empty[Int]
-        val t1 = new Throwable
-        val t2 = new Throwable
-        intercept[Throwable] {
-          onTry {
-            list ::= 1
-            throw t1
-          } onFinally {
-            list ::= 2
-            throw t2
+    "throwing any `Throwable` in the first code block and a fatal `Throwable` in the second code block" should {
+      "execute both code blocks and throw only the exception from the second code block" in {
+        forAll(anyThrowables) { tf1 =>
+          forAll(fatalThrowables) { tf2 =>
+            val t1 = tf1()
+            val t2 = tf2()
+            var list = List.empty[Int]
+            intercept[Throwable] {
+              onTry {
+                list ::= 1
+                throw t1
+              } onFinally {
+                list ::= 2
+                throw t2
+              }
+            } should be theSameInstanceAs t2
+            t1.getSuppressed shouldBe Array()
+            t2.getSuppressed shouldBe Array()
+            list shouldBe List(2, 1)
           }
-        } should be theSameInstanceAs t1
-        t1.getSuppressed shouldBe Array(t2)
-        list shouldBe List(2, 1)
+        }
+      }
+    }
+
+    "throwing any `Throwable` in the first code block and a non-fatal `Throwable` in the second code block" should {
+      "execute both code blocks and chain the exceptions via `Throwable.addSuppressed(Throwable)`" in {
+        forAll(anyThrowables) { tf1 =>
+          forAll(nonFatalThrowables) { tf2 =>
+            val t1 = tf1()
+            val t2 = tf2()
+            var list = List.empty[Int]
+            intercept[Throwable] {
+              onTry {
+                list ::= 1
+                throw t1
+              } onFinally {
+                list ::= 2
+                throw t2
+              }
+            } should be theSameInstanceAs t1
+            t1.getSuppressed shouldBe Array(t2)
+            t2.getSuppressed shouldBe Array()
+            list shouldBe List(2, 1)
+          }
+        }
       }
     }
   }
 
   "The `onTry { ... } onThrowable { ... }` statement" when {
-    "not throwing a Throwable" should {
+    "not throwing any exception" should {
       "execute only the first code block" in {
         var list = List.empty[Int]
         onTry {
@@ -106,39 +174,172 @@ class OnTryFinallySpec extends WordSpec {
       }
     }
 
-    "throwing a Throwable in the first code block" should {
+    "throwing any `Throwable` in the first code block" should {
       "execute both code blocks" in {
-        var list = List.empty[Int]
-        val t = new Throwable
-        intercept[Throwable] {
-          onTry {
-            list ::= 1
-            throw t
-          } onThrowable {
-            list ::= 2
-          }
-        } should be theSameInstanceAs t
-        t.getSuppressed shouldBe Array()
-        list shouldBe List(2, 1)
+        forAll(anyThrowables) { tf =>
+          val t = tf()
+          var list = List.empty[Int]
+          intercept[Throwable] {
+            onTry {
+              list ::= 1
+              throw t
+            } onThrowable {
+              list ::= 2
+            }
+          } should be theSameInstanceAs t
+          t.getSuppressed shouldBe Array()
+          list shouldBe List(2, 1)
+        }
       }
     }
 
-    "throwing a Throwable in both code blocks" should {
-      "chain the Throwables via `Throwable.addSuppressed(Throwable)`" in {
-        var list = List.empty[Int]
-        val t1 = new Throwable
-        val t2 = new Throwable
-        intercept[Throwable] {
-          onTry {
-            list ::= 1
-            throw t1
-          } onThrowable {
-            list ::= 2
-            throw t2
+    "throwing any `Throwable` in the first code block and a fatal `Throwable` in the second code block" should {
+      "throw only the exception from the second code block" in {
+        forAll(anyThrowables) { tf1 =>
+          forAll(fatalThrowables) { tf2 =>
+            val t1 = tf1()
+            val t2 = tf2()
+            var list = List.empty[Int]
+            intercept[Throwable] {
+              onTry {
+                list ::= 1
+                throw t1
+              } onThrowable {
+                list ::= 2
+                throw t2
+              }
+            } should be theSameInstanceAs t2
+            t1.getSuppressed shouldBe Array()
+            t2.getSuppressed shouldBe Array()
+            list shouldBe List(2, 1)
           }
-        } should be theSameInstanceAs t1
-        t1.getSuppressed shouldBe Array(t2)
-        list shouldBe List(2, 1)
+        }
+      }
+    }
+
+    "throwing any `Throwable` in the first code block and a non-fatal `Throwable` in the second code block" should {
+      "chain the exceptions via `Throwable.addSuppressed(Throwable)`" in {
+        forAll(anyThrowables) { tf1 =>
+          forAll(nonFatalThrowables) { tf2 =>
+            val t1 = tf1()
+            val t2 = tf2()
+            var list = List.empty[Int]
+            intercept[Throwable] {
+              onTry {
+                list ::= 1
+                throw t1
+              } onThrowable {
+                list ::= 2
+                throw t2
+              }
+            } should be theSameInstanceAs t1
+            t1.getSuppressed shouldBe Array(t2)
+            t2.getSuppressed shouldBe Array()
+            list shouldBe List(2, 1)
+          }
+        }
+      }
+    }
+  }
+
+  "The `onTry { ... } onNonFatal { ... }` statement" when {
+    "not throwing any exception" should {
+      "execute only the first code block" in {
+        var list = List.empty[Int]
+        onTry {
+          list ::= 1
+          list
+        } onNonFatal {
+          list ::= 2
+          list
+        } shouldBe List(1)
+        list shouldBe List(1)
+      }
+    }
+
+    "throwing a fatal `Throwable` in the first code block" should {
+      "execute only the first code block" in {
+        forAll(fatalThrowables) { tf =>
+          val t = tf()
+          var list = List.empty[Int]
+          intercept[Throwable] {
+            onTry {
+              list ::= 1
+              throw t
+            } onNonFatal {
+              list ::= 2
+            }
+          } should be theSameInstanceAs t
+          t.getSuppressed shouldBe Array()
+          list shouldBe List(1)
+        }
+      }
+    }
+
+    "throwing a non-fatal `Throwable` in the first code block" should {
+      "execute both code blocks" in {
+        forAll(nonFatalThrowables) { tf =>
+          val t = tf()
+          var list = List.empty[Int]
+          intercept[Throwable] {
+            onTry {
+              list ::= 1
+              throw t
+            } onNonFatal {
+              list ::= 2
+            }
+          } should be theSameInstanceAs t
+          t.getSuppressed shouldBe Array()
+          list shouldBe List(2, 1)
+        }
+      }
+    }
+
+    "throwing a non-fatal `Throwable` in the first code block and a fatal `Throwable` in the second code block" should {
+      "throw only the exception from the second code block" in {
+        forAll(nonFatalThrowables) { tf1 =>
+          forAll(fatalThrowables) { tf2 =>
+            val t1 = tf1()
+            val t2 = tf2()
+            var list = List.empty[Int]
+            intercept[Throwable] {
+              onTry {
+                list ::= 1
+                throw t1
+              } onNonFatal {
+                list ::= 2
+                throw t2
+              }
+            } should be theSameInstanceAs t2
+            t1.getSuppressed shouldBe Array()
+            t2.getSuppressed shouldBe Array()
+            list shouldBe List(2, 1)
+          }
+        }
+      }
+    }
+
+    "throwing a non-fatal `Throwable` in the first code block and a non-fatal `Throwable` in the second code block" should {
+      "chain the exceptions via `Throwable.addSuppressed(Throwable)`" in {
+        forAll(nonFatalThrowables) { tf1 =>
+          forAll(nonFatalThrowables) { tf2 =>
+            val t1 = tf1()
+            val t2 = tf2()
+            var list = List.empty[Int]
+            intercept[Throwable] {
+              onTry {
+                list ::= 1
+                throw t1
+              } onNonFatal {
+                list ::= 2
+                throw t2
+              }
+            } should be theSameInstanceAs t1
+            t1.getSuppressed shouldBe Array(t2)
+            t2.getSuppressed shouldBe Array()
+            list shouldBe List(2, 1)
+          }
+        }
       }
     }
   }
