@@ -14,11 +14,7 @@
  * limitations under the License.
  */
 
-libraryDependencies ++= Seq(
-  "org.mockito" % "mockito-core" % "2.8.9",
-  "org.scalacheck" %% "scalacheck" % "1.13.5",
-  "org.scalatest" %% "scalatest" % "3.0.3"
-)
+crossScalaVersions := Seq("2.10.6", "2.11.11", "2.12.2")
 
 fork in Test := true // required to make `javaOptions` effective.
 
@@ -29,6 +25,12 @@ javacOptions := Seq("-source", "1.8") // unfortunately, this is used for running
 javaOptions += "-ea"
 
 homepage := Some(url("https://github.com/christian-schlichtherle/scala-plus"))
+
+libraryDependencies ++= Seq(
+  "org.mockito" % "mockito-core" % "2.8.9",
+  "org.scalacheck" %% "scalacheck" % "1.13.5",
+  "org.scalatest" %% "scalatest" % "3.0.3"
+)
 
 licenses := Seq("Apache License, Version 2.0" -> url("https://www.apache.org/licenses/LICENSE-2.0"))
 
