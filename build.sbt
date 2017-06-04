@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-crossScalaVersions := Seq("2.10.6", "2.11.11", "2.12.2")
+crossScalaVersions := Seq("2.10.2", "2.11.0", "2.12.0")
 
 fork in Test := true // required to make `javaOptions` effective.
 
@@ -71,7 +71,7 @@ publishTo := {
 
 scalacOptions := Seq("-deprecation", "-explaintypes", "-feature", "-unchecked")
 
-scalaVersion := "2.11.11"
+scalaVersion := "2.12.2"
 
 scmInfo := Some(ScmInfo(
   browseUrl = url("https://github.com/christian-schlichtherle/scala-plus"),
