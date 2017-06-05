@@ -27,9 +27,9 @@ javaOptions += "-ea"
 homepage := Some(url("https://github.com/christian-schlichtherle/scala-plus"))
 
 libraryDependencies ++= Seq(
-  "org.mockito" % "mockito-core" % "2.8.9",
-  "org.scalacheck" %% "scalacheck" % "1.13.5",
-  "org.scalatest" %% "scalatest" % "3.0.3"
+  "org.mockito" % "mockito-core" % "2.8.9" % Test,
+  "org.scalacheck" %% "scalacheck" % "1.13.5" % Test,
+  "org.scalatest" %% "scalatest" % "3.0.3" % Test
 )
 
 licenses := Seq("Apache License, Version 2.0" -> url("https://www.apache.org/licenses/LICENSE-2.0"))
@@ -38,7 +38,11 @@ name := "Scala+"
 
 normalizedName := "scala-plus"
 
-organization := "global.namespace"
+organization := "global.namespace.scala-plus"
+
+organizationName := "Schlichtherle IT Services"
+
+organizationHomepage := Some(new URL("http://schlichtherle.de"))
 
 pomExtra :=
   <developers>
@@ -61,7 +65,7 @@ pomIncludeRepository := (_ => false)
 publishTo := {
   val nexus = "https://oss.sonatype.org/"
   Some(
-    if (version(_ endsWith "-SNAPSHOT").value) {
+    if (isSnapshot.value) {
       "snapshots" at nexus + "content/repositories/snapshots"
     } else {
       "releases" at nexus + "service/local/staging/deploy/maven2"
