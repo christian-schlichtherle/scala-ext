@@ -85,4 +85,4 @@ scmInfo := Some(ScmInfo(
 
 testOptions += Tests.Argument(TestFrameworks.JUnit, "-a")
 
-version := "0.1"
+version := "0.2-SNAPSHOT"
