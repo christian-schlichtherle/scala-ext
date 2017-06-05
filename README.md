@@ -27,5 +27,8 @@ Second, run
 
 Third, tag the commit with `scala-plus-<version>` where `<version>` is the value of the setting key `version`.
 
-Finally, increment the value of the setting key `version` to the next [semantic version number](https://semver.org) and 
+Fourth, increment the value of the setting key `version` to the next [semantic version number](https://semver.org) and 
 append `-SNAPSHOT` again.
+
+Finally, browse to [OSS Nexus Repository Manager](https://oss.sonatype.org/#stagingRepositories), find the staging 
+repository, close and release it.
