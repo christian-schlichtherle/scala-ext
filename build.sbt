@@ -40,9 +40,9 @@ normalizedName := "scala-plus"
 
 organization := "global.namespace.scala-plus"
 
-organizationName := "Schlichtherle IT Services"
-
 organizationHomepage := Some(new URL("http://schlichtherle.de"))
+
+organizationName := "Schlichtherle IT Services"
 
 pomExtra :=
   <developers>
