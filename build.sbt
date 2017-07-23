@@ -83,6 +83,4 @@ scmInfo := Some(ScmInfo(
   devConnection = Some("scm:git:ssh://git@github.com/christian-schlichtherle/scala-plus.git")
 ))
 
-testOptions += Tests.Argument(TestFrameworks.JUnit, "-a")
-
 version := "0.2-SNAPSHOT"
