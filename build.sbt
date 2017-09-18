@@ -27,9 +27,9 @@ javaOptions += "-ea"
 homepage := Some(url("https://github.com/christian-schlichtherle/scala-plus"))
 
 libraryDependencies ++= Seq(
-  "org.mockito" % "mockito-core" % "2.8.9" % Test,
+  "org.mockito" % "mockito-core" % "2.10.0" % Test,
   "org.scalacheck" %% "scalacheck" % "1.13.5" % Test,
-  "org.scalatest" %% "scalatest" % "3.0.3" % Test
+  "org.scalatest" %% "scalatest" % "3.0.4" % Test
 )
 
 licenses := Seq("Apache License, Version 2.0" -> url("https://www.apache.org/licenses/LICENSE-2.0"))
