@@ -15,18 +15,27 @@
  */
 package global.namespace.scala.plus
 
-import global.namespace.scala.plus.ResourceLoan._
+import global.namespace.scala.plus.Resource._
 import org.mockito.Mockito._
 import org.scalatest.Matchers._
 import org.scalatest.WordSpec
 import org.scalatest.mockito.MockitoSugar.mock
 
-import scala.util.control.Breaks
-
 /** @author Christian Schlichtherle */
-class ResourceLoanSpec extends WordSpec {
+class ResourceSpec extends WordSpec {
 
-  "The `loan(resource) to { resource => ... }` statement" when {
+  "The loan ... to ... statement" should {
+    "create the resource lazily, but exactly only once" in {
+      val fun = mock[() => AutoCloseable]
+      when(fun()) thenReturn mock[AutoCloseable]
+      val loan = Resource loan fun()
+      verify(fun, times(0))()
+      loan to { closeable => }
+      verify(fun)()
+    }
+  }
+
+  "The loan ... to ... statement" when {
     "not throwing a `Throwable` in its code block" should {
       "call `AutoCloseable.close()`" in {
         val resource = mock[AutoCloseable]
