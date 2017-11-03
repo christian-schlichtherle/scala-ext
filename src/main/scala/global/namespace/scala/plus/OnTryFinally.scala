@@ -70,8 +70,9 @@ object OnTryFinally extends OnTryFinally {
           finallyBlock
         } catch {
           case NonFatal(t2) =>
-            if (null == t1)
+            if (null == t1) {
               throw t2
+            }
             t1 addSuppressed t2
         }
       }
@@ -94,8 +95,7 @@ object OnTryFinally extends OnTryFinally {
           try {
             throwBlock
           } catch {
-            case NonFatal(t2) =>
-              t1 addSuppressed t2
+            case NonFatal(t2) => t1 addSuppressed t2
           }
           throw t1
       }
