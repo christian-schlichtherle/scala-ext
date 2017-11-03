@@ -27,7 +27,7 @@ javaOptions += "-ea"
 homepage := Some(url("https://github.com/christian-schlichtherle/scala-plus"))
 
 libraryDependencies ++= Seq(
-  "org.mockito" % "mockito-core" % "2.10.0" % Test,
+  "org.mockito" % "mockito-core" % "2.11.0" % Test,
   "org.scalacheck" %% "scalacheck" % "1.13.5" % Test,
   "org.scalatest" %% "scalatest" % "3.0.4" % Test
 )
@@ -75,7 +75,7 @@ publishTo := {
 
 scalacOptions := Seq("-deprecation", "-explaintypes", "-feature", "-unchecked")
 
-scalaVersion := "2.12.2"
+scalaVersion := "2.12.4"
 
 scmInfo := Some(ScmInfo(
   browseUrl = url("https://github.com/christian-schlichtherle/scala-plus"),
