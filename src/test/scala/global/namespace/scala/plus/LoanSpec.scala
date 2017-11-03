@@ -15,22 +15,21 @@
  */
 package global.namespace.scala.plus
 
-import global.namespace.scala.plus.Resource._
 import org.mockito.Mockito._
 import org.scalatest.Matchers._
 import org.scalatest.WordSpec
 import org.scalatest.mockito.MockitoSugar.mock
 
 /** @author Christian Schlichtherle */
-class ResourceSpec extends WordSpec {
+class LoanSpec extends WordSpec {
 
-  "The loan ... to ... statement" should {
+  "The Loan(...) { ... } statement" should {
     "create the resource lazily, but exactly only once" in {
       val fun = mock[() => AutoCloseable]
       when(fun()) thenReturn mock[AutoCloseable]
-      val loan = Resource loan fun()
+      val loan = Loan(fun())
       verify(fun, times(0))()
-      loan to { closeable => }
+      loan { closeable => }
       verify(fun)()
     }
   }
@@ -39,7 +38,7 @@ class ResourceSpec extends WordSpec {
     "not throwing a `Throwable` in its code block" should {
       "call `AutoCloseable.close()`" in {
         val resource = mock[AutoCloseable]
-        loan(resource) to { param =>
+        Loan(resource) { param =>
           param should be theSameInstanceAs resource
         }
         verify(resource) close ()
@@ -51,7 +50,7 @@ class ResourceSpec extends WordSpec {
       "call `AutoCloseable.close()`" in {
         val resource = mock[AutoCloseable]
         intercept[Throwable] {
-          loan(resource) to { param =>
+          Loan(resource) { param =>
             param should be theSameInstanceAs resource
             throw new Throwable
           }
@@ -66,7 +65,7 @@ class ResourceSpec extends WordSpec {
         val resource = mock[AutoCloseable]
         when(resource close ()) thenThrow new Exception
         intercept[Exception] {
-          loan(resource) to { param =>
+          Loan(resource) { param =>
             param should be theSameInstanceAs resource
           }
         }
@@ -82,7 +81,7 @@ class ResourceSpec extends WordSpec {
         val t2 = new Exception
         when(resource close ()) thenThrow t2
         intercept[Throwable] {
-          loan(resource) to { param =>
+          Loan(resource) { param =>
             param should be theSameInstanceAs resource
             throw t1
           }
@@ -96,7 +95,7 @@ class ResourceSpec extends WordSpec {
     "dealing with a null resource" should {
       "just call the resource handler" in {
         var called = false
-        loan(null: AutoCloseable) to { param =>
+        Loan(null: AutoCloseable) { param =>
           param shouldBe null
           called = true
         }
