@@ -83,4 +83,4 @@ scmInfo := Some(ScmInfo(
   devConnection = Some("scm:git:ssh://git@github.com/christian-schlichtherle/scala-plus.git")
 ))
 
-version := "0.3"
+version := "0.4-SNAPSHOT"
